@@ -21,7 +21,6 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-
 public class Main extends JFrame{
   //  This is gonna be the GUI for the program
   //  Main()
@@ -47,7 +46,6 @@ public class Main extends JFrame{
     //We declare the size of our container JFRame
     this.setSize(400,400);
     this.setLocationRelativeTo(null);
-    this.setDefaultCloseOperatioin(JFrame.EXIT_ON_CLOSE);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     JPanel thePanel = new JPanel();
 
@@ -86,30 +84,29 @@ public class Main extends JFrame{
 
   public void actionPerformed(ActionEvent e){
     if(e.getSource() == calculate){
-      /* LOGIC PART OF THE PROGRAM */
-      s10 = new Simpson(10, E, 1.1, 9);
-      s20 = new Simpson(20, E, 1.1, 9);
-      if ( ( s20.calculateP() - s10.calculateP() ) < E )  {
-          table.getModel().setValueAt( s20.calculateP(),1,1 );
-      } else {
-        System.out.println("Error calculating the P");
-      }
+      auxCalc(1.1,9,0);
+      auxCalc(1.1812,10,1);
+      auxCalc(2.750,30,2);
+    }
+  }
 
-    /* END OF LOGIC */
+  private void auxCalc(double x, double dof, int row){
+    s10 = new Simpson(10, E, x, dof);
+    //s10.calculateP();
+    s20 = new Simpson(20, E, x, dof);
+    if ( ( s20.calculateP() - s10.calculateP() ) < E )  {
+        table.getModel().setValueAt( s20.calculateP(),row,4 );
+    } else {
+      System.out.println("Error calculating the P");
     }
   }
 }
 
-
   public static void main(String[] args) {
     Main test = new Main();
   }
-
-
     
 }
-
-
 
 
 class TDistribution {
@@ -138,18 +135,28 @@ class TDistribution {
   private double gamma( double x){
     /*
      * Strategy:
+     *    FIRST check if is an integer... Dafuq with the instructions!!! =(
      *    1. Pre kickback with x == 1
      *    2. Kickback with x = .5
      *    3. Recursive call
      */
-
-    if (x == 1){
-      return 1 * gamma(0.5);
-    } else if( x == 0.5){
-      return Math.sqrt(PI);
+    if ((x == Math.floor(x)) && !Double.isInfinite(x)) {
+    // integral type
+      if( x == 1){
+        return 1;
+      } else {
+        return (x-1) * gamma(x-1);
+      }
     } else {
-      return (x-1) * gamma(x-1);
+        if (x == 1){
+        return 1 * gamma(0.5);
+      } else if( x == 0.5){
+        return Math.sqrt(PI);
+      } else {
+        return (x-1) * gamma(x-1);
+      }
     }
+    
 
   }
 
@@ -163,17 +170,21 @@ class TDistribution {
      */
 
     //1.-
+
     double itemBase = 1 + ( Math.pow(this.x,2)/this.dof );
+    
 
     //Auxiliar exponent var for 2.-
     double itemExponent = (-1)*( (dof+1) / 2 );
+    
     //2.-
     double itemComplete = Math.pow( itemBase, itemExponent);
 
     //3.-
     double auxDenominator = Math.pow( (dof*PI),0.5 );
+    
     double itemObelus = ( gamma( (dof+1)/2 ) ) / (auxDenominator * gamma(dof/2) );
-
+    
     //4.-
     return itemComplete * itemObelus;
   }
@@ -229,7 +240,7 @@ class Simpson{
     TDistribution f0 = new TDistribution(0, this.dof);
     TDistribution fx = new TDistribution(this.x, this.dof);
 
-    return f0.calculateDistribution() + fx.calculateDistribution() + this.sumEven() + this.sumOdd();
+    return (W/3) * ( f0.calculateDistribution() + fx.calculateDistribution() + this.sumEven() + this.sumOdd() );
   }
 
   private double sumEven(){
@@ -257,10 +268,12 @@ class Simpson{
       t.setX( i * W );
 
       //5.-
-      acum =+ t.calculateDistribution();
+      
+      acum += t.calculateDistribution();
     }
 
     //6.-
+    System.out.println(acum);
     return 4 * acum;
   }
 
@@ -289,7 +302,7 @@ class Simpson{
       t.setX( i * W );
 
       //5.-
-      acum =+ t.calculateDistribution();
+      acum += t.calculateDistribution();
     }
 
     //6.-
