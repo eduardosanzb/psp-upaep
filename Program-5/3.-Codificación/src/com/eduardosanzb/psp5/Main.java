@@ -21,7 +21,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class Main extends JFrame{
+public class Main extends JFrame {
   //  This is gonna be the GUI for the program
   //  Main()
 
@@ -80,30 +80,80 @@ public class Main extends JFrame{
     this.setVisible(true);
   }
 
-  private class ListenForButton implements ActionListener{
-
-  public void actionPerformed(ActionEvent e){
-    if(e.getSource() == calculate){
-      auxCalc(1.1,9,0);
-      auxCalc(1.1812,10,1);
-      auxCalc(2.750,30,2);
-    }
-  }
-
-  private void auxCalc(double x, double dof, int row){
+  public double auxCalc(double x, double dof, int row){
     s10 = new Simpson(10, E, x, dof);
     //s10.calculateP();
     s20 = new Simpson(20, E, x, dof);
     if ( ( s20.calculateP() - s10.calculateP() ) < E )  {
         table.getModel().setValueAt( s20.calculateP(),row,4 );
+        return s20.calculateP();
     } else {
       System.out.println("Error calculating the P");
+      return 0;
+    }
+  }
+
+private class ListenForButton implements ActionListener{
+
+  public void actionPerformed(ActionEvent e){
+    if(e.getSource() == calculate){
+      //auxCalc(0.5,6,0);
+      //auxCalc(1.1812,10,1);
+      //auxCalc(2.750,30,2);
+    }
+  }
+
+  public double auxCalc(double x, double dof, int row){
+    s10 = new Simpson(10, E, x, dof);
+    //s10.calculateP();
+    s20 = new Simpson(20, E, x, dof);
+    if ( ( s20.calculateP() - s10.calculateP() ) < E )  {
+        table.getModel().setValueAt( s20.calculateP(),row,4 );
+        return s20.calculateP();
+    } else {
+      System.out.println("Error calculating the P");
+      return 0;
     }
   }
 }
 
   public static void main(String[] args) {
+    System.out.println("The test case:");
+    System.out.println("The error of acceptance is: 0.00001");
+    System.out.println("The P value is: 0.20");
+    System.out.println("The expected X is: 0.55338");
     Main test = new Main();
+    Scanner sc = new Scanner(System.in);
+    double val = 1;
+    double d = 0.5;
+    double pVal = test.auxCalc(val,6,0);
+    double eCalc = 0.20 - pVal;
+    String eFlag = "lol";
+    Boolean flaggy = true;
+    while(flaggy){
+      System.out.println("********");
+      eCalc = 0.20 - pVal;
+      d = ( Math.signum(eCalc) == Math.signum(1) )? d: d/2;
+      val = (pVal < 0.20)? val + d: val - d; 
+      pVal = test.auxCalc(val,6,0);
+      System.out.println("The x value is: " + val);
+      System.out.println("The p value is: " + pVal);
+      System.out.println("Error value: " + Math.floor(eCalc));
+      String flag = pVal < 0.20 ?"Add":"Subtract";
+      System.out.println("Add or subtract? " + flag);
+
+      DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(4);
+        System.out.println(df.format(eCalc));
+        System.out.println(eCalc);
+        eFlag = df.format(eCalc);
+      Boolean mmm = Math.floor(eCalc) == 0.0001;
+      System.out.println("The errors are wequal? " + mmm);
+      System.out.println("The errors are the same sign?" + ( Math.signum(eCalc) == Math.signum(1) ) );
+      flaggy = eFlag.equals(".0001") ? false: true;
+      System.out.println("The flag is:" + eFlag + "So the bool shoudl be: " + (eFlag.equals(".0001")));
+      //sc.nextLine();
+    }
   }
     
 }
@@ -273,7 +323,7 @@ class Simpson{
     }
 
     //6.-
-    System.out.println(acum);
+    //System.out.println(acum);
     return 4 * acum;
   }
 

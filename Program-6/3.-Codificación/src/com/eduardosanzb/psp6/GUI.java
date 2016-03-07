@@ -506,4 +506,3 @@ class Simpson{
     this.dof = dof;
   }
 }
-
